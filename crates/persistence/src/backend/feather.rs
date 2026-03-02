@@ -548,6 +548,7 @@ impl FeatherWriter {
                 .child("data")
                 .child("custom")
                 .child(type_name.to_string());
+
             if let Some(ref id) = instrument_id {
                 let safe = safe_directory_identifier(id);
                 if !safe.is_empty() {
@@ -589,6 +590,7 @@ impl FeatherWriter {
             .child("data")
             .child("custom")
             .child(type_name.to_string());
+
         if let Some(id) = &identifier {
             let safe = safe_directory_identifier(id);
             if !safe.is_empty() {
@@ -699,6 +701,7 @@ impl FeatherWriter {
         }
 
         let batch = Self::encode_custom_to_batch(custom)?;
+
         if let Some(writer) = self.writers.get_mut(&path) {
             let should_rotate = writer.write_record_batch(&batch)?;
             if should_rotate || self.check_scheduled_rotation(&path) {

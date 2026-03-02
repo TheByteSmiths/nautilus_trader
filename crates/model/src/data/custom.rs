@@ -418,6 +418,7 @@ impl Serialize for CustomData {
                 serde_json::Value::String(self.data_type.type_name().to_string()),
             );
             data_type_obj.insert("metadata".to_string(), metadata_value);
+
             if let Some(id) = self.data_type.identifier() {
                 data_type_obj.insert(
                     "identifier".to_string(),

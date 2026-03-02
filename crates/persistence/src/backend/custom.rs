@@ -81,6 +81,7 @@ pub fn augment_batch_with_data_type_column(
     )));
     let mut meta = schema.metadata().clone();
     meta.insert("type_name".to_string(), type_name.to_string());
+
     if let Some(m) = dt_meta {
         meta.extend(m.clone());
     }
@@ -117,6 +118,7 @@ pub fn custom_data_path_components(type_name: &str, identifier: Option<&str>) ->
         "custom".to_string(),
         type_name.to_string(),
     ];
+
     if let Some(id) = identifier {
         let safe = safe_directory_identifier(id);
         if !safe.is_empty() {
@@ -251,6 +253,7 @@ pub fn decode_custom_batches_to_data(
         if use_ts_event_for_ts_init {
             let column_names: Vec<String> =
                 schema.fields().iter().map(|f| f.name().clone()).collect();
+
             if let (Some(ts_event_idx), Some(ts_init_idx)) = (
                 column_names.iter().position(|n| n == "ts_event"),
                 column_names.iter().position(|n| n == "ts_init"),

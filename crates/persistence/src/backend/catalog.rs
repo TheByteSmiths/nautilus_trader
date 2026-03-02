@@ -603,6 +603,7 @@ impl ParquetDataCatalog {
 
         let file_exists =
             self.execute_async(async { Ok(self.object_store.head(&object_path).await.is_ok()) })?;
+
         if file_exists {
             log::info!("File {path:?} already exists, skipping write");
             return Ok(path);
@@ -1256,6 +1257,7 @@ impl ParquetDataCatalog {
                         break;
                     }
                 }
+
                 if !matches {
                     continue;
                 }
@@ -1327,9 +1329,11 @@ impl ParquetDataCatalog {
         if path.contains("://") {
             return path.to_string();
         }
+
         if path.starts_with('/') {
             return path.to_string();
         }
+
         if self.original_uri.starts_with("file://") {
             let base = self.original_uri.trim_end_matches('/');
             let path_trimmed = path.trim_end_matches('/');

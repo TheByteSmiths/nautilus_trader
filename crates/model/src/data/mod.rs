@@ -477,18 +477,23 @@ fn value_to_topic_string(v: &JsonValue) -> String {
     if let Some(s) = v.as_str() {
         return s.to_string();
     }
+
     if let Some(n) = v.as_u64() {
         return n.to_string();
     }
+
     if let Some(n) = v.as_i64() {
         return n.to_string();
     }
+
     if let Some(b) = v.as_bool() {
         return b.to_string();
     }
+
     if let Some(f) = v.as_f64() {
         return f.to_string();
     }
+
     if v.is_null() {
         return "null".to_string();
     }
@@ -581,6 +586,7 @@ impl DataType {
                 serde_json::to_value(m).unwrap_or(serde_json::Value::Null)
             }),
         );
+
         if let Some(ref id) = self.identifier {
             map.insert(
                 "identifier".to_string(),

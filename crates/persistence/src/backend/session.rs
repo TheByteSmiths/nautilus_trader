@@ -207,6 +207,7 @@ impl DataBackendSession {
             Ok(batch) => {
                 let mut metadata: std::collections::HashMap<String, String> =
                     batch.schema().metadata().clone();
+
                 if let Some(ref tn) = custom_type_name {
                     metadata.insert("type_name".to_string(), tn.clone());
                 }

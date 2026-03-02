@@ -78,6 +78,7 @@ fn vec_inner_type(ty: &Type) -> Option<&Type> {
         Type::Path(p) => &p.path,
         _ => return None,
     };
+
     if path.segments.len() != 1 {
         return None;
     }
@@ -89,6 +90,7 @@ fn vec_inner_type(ty: &Type) -> Option<&Type> {
         syn::PathArguments::AngleBracketed(a) => &a.args,
         _ => return None,
     };
+
     if args.len() != 1 {
         return None;
     }
@@ -296,9 +298,11 @@ fn py_param_ty(ty: &Type) -> Option<TokenStream> {
     if outer == "UnixNanos" {
         return Some(quote! { u64 });
     }
+
     if outer == "Vec" && inner == "u8" {
         return Some(quote! { Vec<u8> });
     }
+
     if outer == "Vec" && inner == "f64" {
         return Some(quote! { Vec<f64> });
     }
@@ -309,6 +313,7 @@ fn py_param_ty(ty: &Type) -> Option<TokenStream> {
 fn py_field_init(ident: &syn::Ident, ty: &Type) -> Option<TokenStream> {
     let (outer, _) = type_for_macro(ty)?;
     let name = ident;
+
     if outer == "UnixNanos" {
         return Some(quote! { #name.into() });
     }
@@ -318,6 +323,7 @@ fn py_field_init(ident: &syn::Ident, ty: &Type) -> Option<TokenStream> {
 /// Python getter return type: UnixNanos -> u64, rest unchanged.
 fn py_getter_ret_ty(ty: &Type) -> Option<TokenStream> {
     let (outer, _) = type_for_macro(ty)?;
+
     if outer == "UnixNanos" {
         return Some(quote! { u64 });
     }
@@ -328,9 +334,11 @@ fn py_getter_ret_ty(ty: &Type) -> Option<TokenStream> {
 fn py_getter_body(ident: &syn::Ident, ty: &Type) -> Option<TokenStream> {
     let (outer, _inner) = type_for_macro(ty)?;
     let name = ident;
+
     if outer == "UnixNanos" {
         return Some(quote! { self.#name.as_u64() });
     }
+
     if outer == "Vec" || outer == "String" {
         return Some(quote! { self.#name.clone() });
     }
@@ -674,6 +682,7 @@ fn gen_decode_batch_impl(ctx: &ExpansionContext<'_>) -> TokenStream {
         .map(|(idx, (ident, ty))| {
             let col_name = format_ident!("col_{}", idx);
             let fn_str = ident.to_string();
+
             if use_string_extract(ty) {
                 quote! {
                     let #col_name = nautilus_serialization::arrow::extract_column_string(
@@ -980,6 +989,7 @@ pub fn expand_custom_data(attr: TokenStream, item: TokenStream) -> TokenStream {
         .iter()
         .find(|(i, _)| *i == "ts_event")
         .map(|(i, _)| i);
+
     if ts_init_field.is_none() || ts_event_field.is_none() {
         return syn::Error::new_spanned(
             input,
