@@ -43,7 +43,28 @@ sequenceDiagram
 
 ## Detailed Registration Process
 
-Registration is the mechanism that bridges the gap between different memory spaces (Python and Rust) and potentially different shared objects (like `rustimport` modules).
+Registration is the mechanism that bridges the gap between different memory spaces (Python and Rust) and potentially different shared objects (like compiled `rustimport` extensions).
+
+```mermaid
+sequenceDiagram
+    participant Py as Python Space (User Code)
+    participant Registry as Python Registry
+    participant R_FFI as Rust FFI Interface
+    participant Reg as Global DataRegistry (Rust)
+    participant RustItem as Rust Space (Native Model)
+
+    Note over Py,Reg: Registering a Python-defined Class
+    Py->>Registry: register_custom_data_class(MyData)
+    Registry->>R_FFI: Pass PyAny type representation
+    R_FFI->>Reg: Register Python Object Extractor
+    R_FFI->>Reg: Register Arrow Schema Provider
+    R_FFI->>Reg: Register IPC Encoder Callback
+    R_FFI->>Reg: Register IPC Decoder Callback
+
+    Note over RustItem,Reg: Registering a Rust-defined Struct
+    RustItem->>Reg: ensure_custom_data_registered::<T>() (from macro)
+    Reg-->>RustItem: Native Encoders/Decoders Inserted directly
+```
 
 ### Python Registration
 
@@ -55,7 +76,7 @@ When you call `register_custom_data_class(MyData)` from Python:
 
 ### Rust Registration
 
-For Rust-defined types (`#[custom_data]`):
+For Rust-defined types (using the `#[custom_data]` macro):
 
 1. **Trait Implementation**: The macro generates code to implement `CustomDataTrait`, `ArrowSchemaProvider`, `EncodeToRecordBatch`, and `DecodeDataFromRecordBatch`.
 2. **Registry Insertion**: `ensure_custom_data_registered::<T>()` is called (usually at module load) to insert the type's logic into the `DataRegistry`.
@@ -64,13 +85,13 @@ For Rust-defined types (`#[custom_data]`):
 
 ## The "Feather Bridge" (Serialization Flow)
 
-Since custom data types are often defined in Python, the Rust backend cannot known how to serialize them to Arrow automatically. Nautilus uses an **Arrow IPC (Feather)** bridge to solve this.
+Since custom data types are often defined in Python, the Rust backend cannot know how to serialize them to Arrow automatically. Nautilus uses an **Arrow IPC (Feather)** bridge to solve this.
 
 ### Encoding (Rust -> Parquet)
 
 When writing Python custom data to the catalog:
 
-1. **The Trigger**: Rust `catalog.write_custom_data` iterates over items.
+1. **The Trigger**: The Rust backend's `catalog.write_custom_data()` method iterates over the provided items.
 2. **The Wrapper**: If the item is a Python object, it's held by a `PythonCustomDataWrapper`.
 3. **The Call-Back**: The wrapper's `encode_record_batch` method is called.
 4. **Python Execution**: Rust acquires the GIL and calls `MyData.encode_record_batch_py(list_of_items)`.
@@ -146,7 +167,7 @@ graph TD
 8. **File Read**: When `catalog.query` is called, the Rust catalog reads the relevant Parquet files from storage (local or cloud).
 9. **Metadata Extraction**: The catalog reads the Parquet file metadata to determine the `type_name` of the stored data.
 10. **Identify Decoder**: The `DataRegistry` is queried to find the `ArrowDecoder` corresponding to that `type_name`.
-11. **Batch Decoding**: The decoder converts the raw `RecordBatch` from the file into a `Vec<Data::Custom>` (Rust wrappers).
+11. **Batch Decoding**: The decoder converts the raw `RecordBatch` from the file into a `Vec<CustomData>` of native Rust wrappers.
 12. **Python Restoration**: These wrappers are returned to Python. When accessed, they either return the original Rust objects (if defined in Rust) or reconstruct the Python objects using their registered deserialization methods.
 
 ### Key Differences from Built-in Data

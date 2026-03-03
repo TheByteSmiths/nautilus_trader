@@ -300,7 +300,7 @@ def test_python_custom_data_equality_by_identity():
 
 # Rust source for rustimport test: custom data type compiled at runtime.
 # Placeholder {nautilus_root} is replaced with the nautilus_trader root path.
-# Override pyo3 to match workspace (0.27.2) to avoid "links = python" conflict.
+# Override pyo3 to match workspace (0.28.2) to avoid "links = python" conflict.
 # Add [features] default = ["python"] so the custom_data macro expands PyO3 code.
 _RUSTIMPORT_MARKET_TICK_RS = """
 // rustimport:pyo3
@@ -308,15 +308,15 @@ _RUSTIMPORT_MARKET_TICK_RS = """
 //: default = ["python"]
 //: python = []
 //: [dependencies]
-//: pyo3 = {{ version = "0.27.2", default-features = false, features = ["extension-module"] }}
+//: pyo3 = {{ version = "0.28.2", default-features = false, features = ["extension-module"] }}
 //: nautilus-core = {{ path = "{nautilus_root}/crates/core" }}
 //: nautilus-macros = {{ path = "{nautilus_root}/crates/nautilus_macros" }}
 //: nautilus-model = {{ path = "{nautilus_root}/crates/model", features = ["python"] }}
-//: nautilus-serialization = {{ path = "{nautilus_root}/crates/serialization" }}
+//: nautilus-serialization = {{ path = "{nautilus_root}/crates/serialization", features = ["arrow", "python"] }}
 //: serde = {{ version = "1.0", features = ["derive"] }}
 //: serde_json = "1.0"
 //: anyhow = "1.0"
-//: arrow = {{ version = "57.2.0", default-features = false, features = ["ipc"] }}
+//: arrow = {{ version = "57.3.0", default-features = false, features = ["ipc"] }}
 
 use nautilus_core::UnixNanos;
 use nautilus_macros::custom_data;
